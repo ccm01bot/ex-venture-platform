@@ -98,9 +98,9 @@ async def optimize_youtube_seo(req: YoutubeOptimizationRequest):
     thumbnail_urls = []
     if not settings.openai_api_key or "your-" in settings.openai_api_key:
         thumbnail_urls = [
-            _get_fallback_photorealistic_image(),
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1024&h=1024&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1024&h=1024&auto=format&fit=crop"
+            "/assets/thumbnails/sample-1.png",
+            "/assets/thumbnails/sample-2.png",
+            "/assets/thumbnails/sample-3.png"
         ]
     else:
         openai_client = AsyncOpenAI(api_key=settings.openai_api_key)

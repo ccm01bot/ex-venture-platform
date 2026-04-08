@@ -43,8 +43,8 @@ PALETTES = [
 
 
 def _get_fallback_photorealistic_image() -> str:
-    # Beautiful, photorealistic dynamic unslash placeholder fitting the startup/tech/AI aesthetic
-    return "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1024&h=1024&auto=format&fit=crop"
+    # Golden-hour holographic HUD hero image bundled with the app
+    return "/assets/articles/sample-hero.png"
 
 
 def _generate_stellar_mock_article(topic: str, keywords: str) -> str:
