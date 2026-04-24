@@ -1,11 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Sparkles, Megaphone, Users, ListFilter } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Users, ListFilter } from 'lucide-react';
 
 export default function OutreachTabs({ currentTab }: { currentTab: string }) {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', href: '/outreach', icon: <LayoutDashboard size={18} /> },
-    { id: 'agent', label: 'AI Lead Agent', href: '/outreach/agent', icon: <Sparkles size={18} /> },
     { id: 'campaigns', label: 'Campaigns', href: '/outreach/campaigns', icon: <Megaphone size={18} /> },
     { id: 'contacts', label: 'Contacts', href: '/outreach/contacts', icon: <Users size={18} /> },
     { id: 'media', label: 'Media Lists', href: '/outreach/media-lists', icon: <ListFilter size={18} /> },

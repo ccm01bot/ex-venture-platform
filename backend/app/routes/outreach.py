@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
@@ -8,6 +9,7 @@ from app.models import OutreachCampaign
 import anthropic
 from pydantic import BaseModel
 from app.core.config import settings
+import asyncio
 
 router = APIRouter(prefix="/api/outreach", tags=["outreach"])
 
@@ -87,74 +89,77 @@ class LeadGenerationResponse(BaseModel):
     leads: list[LeadProfile]
 
 
-@router.post("/agent/generate", response_model=LeadGenerationResponse)
+@router.post("/agent/generate")
 async def run_ai_outreach_agent(req: LeadGenerationRequest):
-    """Generate high-quality mock/predicted leads using Anthropic acting as a seasoned SDR."""
+    """Continuously generate high-quality mock/predicted leads using Gemini via Infinite Stream."""
     
-    if not settings.anthropic_api_key or "your-" in settings.anthropic_api_key:
-        # Fallback offline mock response
-        return LeadGenerationResponse(leads=[
-            LeadProfile(
-                name="Sarah Jenkins", 
-                title="VP Engineering", 
-                company="TechFlow Data", 
-                email_guess="sarah.j@techflow.io", 
-                rationale="Ideal buyer profile for infrastructure tooling in Series B scaleups.", 
-                custom_intro_line="Saw your recent panel on navigating microservices latency—brilliant points on Redis bottlenecks."
-            ),
-            LeadProfile(
-                name="Marcus Vance", 
-                title="Head of Growth", 
-                company="Apex Solar", 
-                email_guess="marcus@apexsolar.com", 
-                rationale="Matches the clean-tech growth trajectory looking for platform scale.", 
-                custom_intro_line="Loved the recent Series A announcement for Apex; scaling sales ops must be a massive priority right now."
-            )
-        ])
+    async def lead_generator():
+        cycle = 1
+        while True:
+            # We add dynamic entropy to the prompt by iterating the cycle requirement so it yields NEW specific people
+            prompt = f"""
+            Act as an elite Sales Development Researcher. 
+            A user is trying to find high-value potential leads.
+            
+            Their Company Context: {req.company_context}
+            Target Industry: {req.industry}
+            Target Persona: {req.target_persona}
+            OFFSET SEED CYCLE: {cycle} (CRITICAL: Do NOT return famous or widely known people you've already yielded. Dig deep into the sector for niche, real individuals.)
+            
+            Find exactly 2 REAL, ACTUAL, SPECIFIC individuals in the real world who currently hold this persona in this exact industry. Do NOT invent them. Find real executives.
+            
+            Output ONLY valid JSON containing EXACTLY this format, with NO markdown formatting:
+            {{
+              "leads": [
+                {{
+                  "name": "REAL First Last Name",
+                  "title": "Their REAL Exact Title",
+                  "company": "Their REAL Current Company",
+                  "email_guess": "their.email@company.com",
+                  "rationale": "1 sentence describing exactly why this specific LIVE person is a perfect buyer.",
+                  "custom_intro_line": "1 personalized cold-email intro line referencing a real-world fact about their career."
+                }}
+              ]
+            }}
+            """
+            
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            dynamic_gemini_key = os.getenv("GEMINI_API_KEY") or getattr(settings, "gemini_api_key", None)
+            
+            if dynamic_gemini_key and "your-" not in dynamic_gemini_key:
+                try:
+                    from google import genai
+                    gemini_client = genai.Client(api_key=dynamic_gemini_key)
+                    
+                    response = gemini_client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                        config=genai.types.GenerateContentConfig(
+                            temperature=0.85, # High temperature to ensure variance
+                            response_mime_type="application/json"
+                        )
+                    )
+                    
+                    cleaned_text = response.text.strip()
+                    if cleaned_text.startswith("```json"):
+                        cleaned_text = cleaned_text[7:-3].strip()
+                    
+                    # Yield raw json chunk immediately formatted to SSE or generic buffer array
+                    yield cleaned_text + "\n"
+                    
+                except Exception as e:
+                    # In case of API failure, stop streaming safely
+                    print(f"Gemini Streaming Error: {e}")
+                    break
+            else:
+                # Mock infinite fallback
+                mock_json = '{{"leads": [{{"name": "Sarah Jenkins", "title": "VP Engineering", "company": "TechFlow Data", "email_guess": "sarah@techflow.io", "rationale": "Ideal Series B layout.", "custom_intro_line": "Loved the panel."}}]}}'
+                yield mock_json + "\n"
+            
+            cycle += 1
+            # Rate limit ourselves natively to prevent Google from banning the key due to aggressive loops
+            await asyncio.sleep(4)
 
-    anthropic_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-    
-    prompt = f"""
-    Act as a brilliant Sales Development Representative (SDR) and lead researcher. 
-    A user is trying to find high-value potential leads to reach out to.
-    
-    Their Company Context: {req.company_context}
-    Target Industry: {req.industry}
-    Target Persona: {req.target_persona}
-    
-    I need you to "brainstorm/predict" exactly 4 hyper-realistic, highly-qualified lead profiles that this user should target. For each lead, invent a realistic persona that perfectly aligns with realistic market dynamics.
-    
-    Output ONLY valid JSON containing EXACTLY this format, with NO markdown formatting:
-    {{
-      "leads": [
-        {{
-          "name": "First Last",
-          "title": "Exact Title",
-          "company": "Fictional but realistic company name",
-          "email_guess": "first.last@company.com",
-          "rationale": "1 sentence describing exactly why this specific profile is a perfect buyer.",
-          "custom_intro_line": "1 incredibly personalized cold-email intro line (the 'hook') that proves we researched them."
-        }}
-      ]
-    }}
-    """
-    
-    try:
-        response = await anthropic_client.messages.create(
-            model="claude-3-5-sonnet-20240620",
-            max_tokens=1500,
-            temperature=0.8,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        import json
-        import re
-        content = response.content[0].text.strip()
-        # Clean any accidental markdown wrap
-        content = re.sub(r'^```json\s*', '', content)
-        content = re.sub(r'^```\s*', '', content)
-        content = re.sub(r'\s*```$', '', content)
-        data = json.loads(content)
-        return LeadGenerationResponse(**data)
-    except Exception as e:
-        # Graceful fallback logic
-        return LeadGenerationResponse(leads=[])
+    return StreamingResponse(lead_generator(), media_type="application/x-ndjson")

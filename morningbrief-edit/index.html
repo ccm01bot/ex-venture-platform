@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:Arial,sans-serif}
+#bg-video{position:absolute;width:1080px;height:1920px;object-fit:cover}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="32" data-width="1080" data-height="1920">
+<video id="bg-video" data-start="0" data-duration="32" data-track-index="0" src="short_input.mp4" autoplay muted></video>
+
+<div class="clip" data-start="0" data-duration="32" data-track-index="1"
+     style="position:absolute;bottom:0;left:0;right:0;height:400px;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent)"></div>
+
+<div class="clip" data-start="0" data-duration="32" data-track-index="2"
+     style="position:absolute;top:0;left:0;right:0;padding:50px 30px 60px;background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);display:flex;justify-content:space-between;align-items:center">
+  <span style="color:#00aaff;font-size:28px;font-weight:bold;letter-spacing:3px">EXAI GLOBAL</span>
+  <span style="background:#cc0000;color:#fff;padding:6px 16px;border-radius:6px;font-size:18px;font-weight:bold">AI NEWS</span>
+</div>
+
+<div id="hook" class="clip" data-start="0" data-duration="4" data-track-index="3"
+     style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);text-align:center;width:900px">
+  <div style="width:60px;height:5px;background:#00aaff;margin:0 auto 20px;border-radius:3px"></div>
+  <span style="color:#fff;font-size:60px;font-weight:bold;text-shadow:0 4px 20px rgba(0,0,0,0.9)">AI rules, neurons, GPT-5.5 & more!</span>
+  <div style="width:60px;height:5px;background:#00aaff;margin:20px auto 0;border-radius:3px"></div>
+</div>
+
+
+    <div class="clip overlay" data-start="1" data-duration="6" data-track-index="4"
+         style="position:absolute;bottom:300px;left:40px;right:40px;background:rgba(0,20,60,0.85);
+                border-left:4px solid #00aaff;border-radius:0 12px 12px 0;padding:20px 30px">
+      <span style="color:#fff;font-size:40px;font-weight:bold;text-shadow:0 2px 8px rgba(0,0,0,0.8)">EU AI ACT: HIRING HIGH-RISK!</span>
+    </div>
+    <div class="clip overlay" data-start="11" data-duration="6" data-track-index="5"
+         style="position:absolute;bottom:300px;left:40px;right:40px;background:rgba(0,20,60,0.85);
+                border-left:4px solid #00aaff;border-radius:0 12px 12px 0;padding:20px 30px">
+      <span style="color:#fff;font-size:40px;font-weight:bold;text-shadow:0 2px 8px rgba(0,0,0,0.8)">NEURONS: REAL BRAIN CONNECTION!</span>
+    </div>
+    <div class="clip overlay" data-start="21" data-duration="6" data-track-index="6"
+         style="position:absolute;bottom:300px;left:40px;right:40px;background:rgba(0,20,60,0.85);
+                border-left:4px solid #00aaff;border-radius:0 12px 12px 0;padding:20px 30px">
+      <span style="color:#fff;font-size:40px;font-weight:bold;text-shadow:0 2px 8px rgba(0,0,0,0.8)">GPT-5.5 SPUD: UNBELIEVABLE POWER!</span>
+    </div>
+    <div class="clip overlay" data-start="31" data-duration="6" data-track-index="7"
+         style="position:absolute;bottom:300px;left:40px;right:40px;background:rgba(0,20,60,0.85);
+                border-left:4px solid #00aaff;border-radius:0 12px 12px 0;padding:20px 30px">
+      <span style="color:#fff;font-size:40px;font-weight:bold;text-shadow:0 2px 8px rgba(0,0,0,0.8)">CLAUDE 4: UNMATCHED CREATIVITY!</span>
+    </div>
+
+<div class="clip" data-start="24" data-duration="8" data-track-index="10"
+     style="position:absolute;bottom:200px;left:50%;transform:translateX(-50%);text-align:center">
+  <div style="background:#cc0000;color:#fff;padding:14px 50px;border-radius:8px;font-size:28px;font-weight:bold;display:inline-block">SUBSCRIBE</div>
+  <div style="color:rgba(255,255,255,0.5);font-size:18px;margin-top:10px">Daily AI News</div>
+</div>
+
+<div class="clip" data-start="0" data-duration="32" data-track-index="11"
+     style="position:absolute;bottom:0;left:0;height:4px;background:#00aaff;width:0" id="bar"></div>
+</div>
+
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+tl.from("#hook",{scale:0.5,opacity:0,duration:0.6,ease:"back.out(1.7)"},0.2);
+tl.to("#hook",{opacity:0,scale:1.1,duration:0.3},3.5);
+document.querySelectorAll(".overlay").forEach((el,i)=>{
+  tl.from(el,{x:-1100,duration:0.4,ease:"power3.out"},i*10+1);
+  tl.to(el,{x:1100,duration:0.3},i*10+6);
+});
+tl.to("#bar",{width:"1080px",duration:32,ease:"none"},0);
+window.__timelines["main"]=tl;
+</script></body></html>

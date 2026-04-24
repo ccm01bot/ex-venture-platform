@@ -4,10 +4,9 @@ from sqlalchemy import select
 from uuid import UUID
 from app.core.database import get_db
 from app.schemas import CompanyCreate, CompanyUpdate, CompanyResponse
-from app.models import Company
+from app.models import Company, SEOScan
 
 router = APIRouter(prefix="/api/companies", tags=["companies"])
-
 
 @router.get("", response_model=list[CompanyResponse])
 async def list_companies(
@@ -16,7 +15,20 @@ async def list_companies(
     """List all companies."""
     stmt = select(Company).order_by(Company.created_at.desc())
     result = await db.execute(stmt)
-    return result.scalars().all()
+    companies = result.scalars().all()
+    
+    # Hydrate latest SEOScan score
+    hydrated = []
+    for c in companies:
+        scan_stmt = select(SEOScan.overall_score).filter(SEOScan.company_id == c.id).order_by(SEOScan.scanned_at.desc())
+        scan_res = await db.execute(scan_stmt)
+        latest_score = scan_res.scalar()
+        
+        comp_dict = c.__dict__.copy()
+        comp_dict['overall_score'] = latest_score
+        hydrated.append(comp_dict)
+        
+    return hydrated
 
 
 @router.post("", response_model=CompanyResponse)
@@ -39,7 +51,7 @@ async def create_company(
 
 @router.get("/{company_id}", response_model=CompanyResponse)
 async def get_company(
-    company_id: UUID,
+    company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """Get company details."""
@@ -58,7 +70,7 @@ async def get_company(
 
 @router.put("/{company_id}", response_model=CompanyResponse)
 async def update_company(
-    company_id: UUID,
+    company_id: str,
     company_data: CompanyUpdate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -84,7 +96,7 @@ async def update_company(
 
 @router.delete("/{company_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_company(
-    company_id: UUID,
+    company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """Delete company."""

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from app.core.database import engine, Base
 import app.models
 from app.core.config import settings
-from app.routes import companies, scans, content, contacts, financial, outreach, articles, youtube, executive
+from app.routes import companies, scans, content, contacts, financial, outreach, articles, youtube, executive, images, website_scanner, publish
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,7 +23,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,6 +39,9 @@ app.include_router(outreach.router)
 app.include_router(articles.router)
 app.include_router(youtube.router)
 app.include_router(executive.router)
+app.include_router(images.router)
+app.include_router(website_scanner.router)
+app.include_router(publish.router)
 
 
 @app.get("/health")

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # API Keys
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
     resend_api_key: Optional[str] = None
     
     # CORS

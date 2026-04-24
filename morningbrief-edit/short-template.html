@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #000; font-family: 'Arial', 'Helvetica', sans-serif; }
+
+      #bg-video { position: absolute; width: 1080px; height: 1920px; object-fit: cover; }
+
+      /* Top branding bar */
+      #top-brand {
+        position: absolute; top: 0; left: 0; right: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        padding: 50px 30px 60px; z-index: 10;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      #top-brand .logo { color: #00aaff; font-size: 28px; font-weight: bold; letter-spacing: 3px; }
+      #top-brand .badge { background: #cc0000; color: #fff; padding: 6px 16px; border-radius: 6px; font-size: 18px; font-weight: bold; }
+
+      /* Hook title card */
+      #hook-card {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        text-align: center; z-index: 10; width: 900px;
+      }
+      #hook-card .title {
+        color: #fff; font-size: 64px; font-weight: bold; line-height: 1.2;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+      }
+      #hook-card .accent-line {
+        width: 0; height: 5px; background: #00aaff;
+        margin: 20px auto; border-radius: 3px;
+      }
+
+      /* Info panel */
+      #info-panel {
+        position: absolute; bottom: 300px; left: 40px; right: 40px;
+        background: rgba(0,20,60,0.85); border-left: 4px solid #00aaff;
+        border-radius: 0 12px 12px 0; padding: 20px 30px; z-index: 10;
+      }
+      #info-panel .headline { color: #fff; font-size: 36px; font-weight: bold; line-height: 1.3; }
+      #info-panel .detail { color: rgba(255,255,255,0.7); font-size: 22px; margin-top: 8px; }
+
+      /* Stats bar */
+      #stats-bar {
+        position: absolute; top: 140px; left: 40px; right: 40px;
+        display: flex; gap: 15px; z-index: 10;
+      }
+      .stat-pill {
+        background: rgba(0,100,255,0.8); border-radius: 20px;
+        padding: 8px 20px; color: #fff; font-size: 18px; font-weight: bold;
+      }
+
+      /* Subscribe CTA */
+      #subscribe-cta {
+        position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
+        z-index: 10; text-align: center;
+      }
+      #subscribe-cta .btn {
+        background: #cc0000; color: #fff; padding: 14px 50px;
+        border-radius: 8px; font-size: 26px; font-weight: bold;
+        display: inline-block;
+      }
+      #subscribe-cta .sub-text { color: rgba(255,255,255,0.6); font-size: 16px; margin-top: 8px; }
+
+      /* Bottom gradient */
+      #bottom-grad {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 400px;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        z-index: 5;
+      }
+
+      /* Progress bar */
+      #progress {
+        position: absolute; bottom: 0; left: 0; height: 4px;
+        background: #00aaff; z-index: 20; width: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="short" data-start="0" data-duration="58" data-width="1080" data-height="1920">
+
+      <video id="bg-video" data-start="0" data-duration="58" data-track-index="0" src="short_input.mp4" autoplay muted></video>
+
+      <div id="bottom-grad" class="clip" data-start="0" data-duration="58" data-track-index="1"></div>
+
+      <!-- Top branding -->
+      <div id="top-brand" class="clip" data-start="0" data-duration="58" data-track-index="2">
+        <div class="logo">EXAI GLOBAL</div>
+        <div class="badge">AI NEWS</div>
+      </div>
+
+      <!-- Hook title (first 4 seconds) -->
+      <div id="hook-card" class="clip" data-start="0" data-duration="5" data-track-index="3">
+        <div class="accent-line"></div>
+        <div class="title" id="hook-text">HOOK_TITLE</div>
+        <div class="accent-line"></div>
+      </div>
+
+      <!-- Stats pills -->
+      <div id="stats-bar" class="clip" data-start="5" data-duration="10" data-track-index="4">
+        <div class="stat-pill">🔥 BREAKING</div>
+        <div class="stat-pill">📱 NEW TOOL</div>
+        <div class="stat-pill">🚀 JUST DROPPED</div>
+      </div>
+
+      <!-- Info panel mid-video -->
+      <div id="info-panel" class="clip" data-start="8" data-duration="15" data-track-index="5">
+        <div class="headline" id="panel-headline">PANEL_HEADLINE</div>
+        <div class="detail" id="panel-detail">PANEL_DETAIL</div>
+      </div>
+
+      <!-- Subscribe CTA at end -->
+      <div id="subscribe-cta" class="clip" data-start="40" data-duration="18" data-track-index="6">
+        <div class="btn">SUBSCRIBE</div>
+        <div class="sub-text">Daily AI News • EXAI Global</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div id="progress" class="clip" data-start="0" data-duration="58" data-track-index="7"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Top brand slide down
+      tl.from("#top-brand", { y: -100, opacity: 0, duration: 0.5, ease: "power2.out" }, 0);
+
+      // Hook card zoom in
+      tl.from("#hook-card .title", { scale: 0.5, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 0.3);
+      tl.from("#hook-card .accent-line", { width: 0, duration: 0.6, ease: "power2.out", stagger: 0.2 }, 0.5);
+      tl.to("#hook-card", { opacity: 0, scale: 1.1, duration: 0.4, ease: "power2.in" }, 4);
+
+      // Stats pills bounce in
+      tl.from(".stat-pill", { y: -50, opacity: 0, duration: 0.4, stagger: 0.15, ease: "bounce.out" }, 5);
+      tl.to("#stats-bar", { opacity: 0, y: -30, duration: 0.3 }, 14);
+
+      // Info panel slide in
+      tl.from("#info-panel", { x: -1100, duration: 0.5, ease: "power3.out" }, 8);
+      tl.to("#info-panel", { x: 1100, duration: 0.4, ease: "power2.in" }, 22);
+
+      // Subscribe CTA pop
+      tl.from("#subscribe-cta .btn", { scale: 0, duration: 0.5, ease: "back.out(2)" }, 40);
+      tl.to("#subscribe-cta .btn", { scale: 1.05, duration: 0.4, repeat: -1, yoyo: true, ease: "power1.inOut" }, 41);
+      tl.from("#subscribe-cta .sub-text", { opacity: 0, y: 10, duration: 0.3 }, 41);
+
+      // Progress bar
+      tl.to("#progress", { width: "1080px", duration: 58, ease: "none" }, 0);
+
+      // Bottom gradient fade in
+      tl.from("#bottom-grad", { opacity: 0, duration: 1 }, 0);
+
+      // Badge pulse
+      tl.to("#top-brand .badge", { scale: 1.1, duration: 0.5, repeat: -1, yoyo: true }, 0);
+
+      window.__timelines["short"] = tl;
+    </script>
+  </body>
+</html>

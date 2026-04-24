@@ -26,19 +26,7 @@ STAKEHOLDERS_DB = []
 @router.post("/ghostwriter")
 async def generate_ghostwriter_content(req: GhostwriterRequest):
     """Takes a raw thought/transcript and expands it into an executive brand package."""
-    if not settings.anthropic_api_key or "your-" in settings.anthropic_api_key:
-        lines = req.transcript.split('.')
-        tweet_lines = [f"{i+1}/ {line.strip()}." for i, line in enumerate(lines) if line.strip()]
-        if not tweet_lines:
-            tweet_lines = [req.transcript]
-            
-        return {
-            "linkedin": f"🚨 NEW INSIGHT\n\n{req.transcript}\n\nHere is why this matters right now. 👇\n\n#Growth #Strategy",
-            "twitter": tweet_lines,
-            "article": f"<h2>Strategic Overview</h2><p>{req.transcript}</p><p><em>This brief has been structurally formatted for readability and CMS syndication.</em></p>"
-        }
-    
-    client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+    client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key or "sk-dummy")
     prompt = f"""You are an elite ghostwriter for a Fortune 500 CEO. 
 Take the following raw, unformatted dictated thought from the executive:
 ---
@@ -49,24 +37,79 @@ Expand it into three formats. Output as valid JSON ONLY with these EXACT keys:
 "twitter": An array of strings representing a 3-part viral Twitter thread.
 "article": A 300-word HTML-formatted thought-leadership snippet (using h3, p, strong)."""
 
-    res = await client.messages.create(
-        model="claude-3-5-sonnet-20240620",
-        max_tokens=2000,
-        temperature=0.7,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    import json
     try:
+        res = await client.messages.create(
+            model="claude-3-5-sonnet-latest",
+            max_tokens=2000,
+            temperature=0.7,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        import json
         content = json.loads(res.content[0].text)
         return content
-    except Exception:
-        # Fallback if LLM misses JSON
-        return {
-            "linkedin": res.content[0].text[:300] + "...\n#Leadership",
-            "twitter": [res.content[0].text[:100], "Continued..."],
-            "article": f"<p>{res.content[0].text}</p>"
-        }
+    except Exception as e:
+        print(f"Anthropic Ghostwriter generation failed: {e}. Falling back to OpenAI.")
+        
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        dynamic_openai_key = os.getenv("OPENAI_API_KEY") or getattr(settings, "openai_api_key", None)
+        
+        has_openai = dynamic_openai_key and "your-" not in dynamic_openai_key
+        if has_openai:
+            try:
+                from openai import AsyncOpenAI
+                openai_client = AsyncOpenAI(api_key=dynamic_openai_key)
+                completion = await openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are an elite ghostwriter parsing raw text into JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                )
+                import json
+                return json.loads(completion.choices[0].message.content)
+            except Exception as openai_err:
+                print(f"OpenAI fallback also failed: {openai_err}")
+
+        # Third Fallback Structure: Gemini AI 
+        dynamic_gemini_key = os.getenv("GEMINI_API_KEY") or getattr(settings, "gemini_api_key", None)
+        has_gemini = dynamic_gemini_key and "your-" not in dynamic_gemini_key
+        if has_gemini:
+            try:
+                from google import genai
+                gemini_client = genai.Client(api_key=dynamic_gemini_key)
+                
+                gemini_prompt = f"""You are an elite ghostwriter for a Fortune 500 CEO. 
+Take the following raw, unformatted dictated thought from the executive:
+---
+{req.transcript}
+---
+Expand it vividly into three thought-leadership formats. Output as valid JSON ONLY with these EXACT keys:
+"linkedin": A punchy, hook-first LinkedIn post with heavy line breaks and hashtags.
+"twitter": An array of strings representing a 3-part viral Twitter thread.
+"article": A 300-word HTML-formatted thought-leadership snippet (using h3, p, strong)."""
+
+                response = gemini_client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=gemini_prompt,
+                    config=genai.types.GenerateContentConfig(
+                        temperature=0.7,
+                        response_mime_type="application/json"
+                    )
+                )
+                
+                import json
+                cleaned_text = response.text.strip()
+                if cleaned_text.startswith("```json"):
+                    cleaned_text = cleaned_text[7:-3].strip()
+                return json.loads(cleaned_text)
+            except Exception as gemini_err:
+                print(f"Gemini fallback also failed: {gemini_err}")
+
+        # Terminal Fallback
+        return dict(linkedin="Failed to generate AI data.", twitter=["Failed to generate.", "Check API keys."], article="<p>Failed to initialize AI endpoints.</p>")
 
 @router.get("/daily-brief")
 async def get_daily_brief(db: AsyncSession = Depends(get_db)):

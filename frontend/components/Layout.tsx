@@ -24,7 +24,7 @@ export default function Layout({ children }: LayoutProps) {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.4)]">
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400">EX Venture</span>
+            <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400">EX AI</span>
           </Link>
         </div>
 
@@ -40,7 +40,6 @@ export default function Layout({ children }: LayoutProps) {
               <NavItem href="/youtube-seo" label="YouTube SEO" currentPath={pathname} />
               <NavItem href="/article-generation" label="Article Gen" currentPath={pathname} />
               <NavItem href="/personal-brand" label="Personal Brand" currentPath={pathname} />
-              <NavItem href="/outreach/agent" label="AI Lead Agent" currentPath={pathname} />
               <NavItem href="/reports" label="Reports" currentPath={pathname} />
             </div>
           </div>

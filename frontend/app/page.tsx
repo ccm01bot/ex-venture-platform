@@ -1,9 +1,33 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { Layers, Activity, Zap } from 'lucide-react';
 
 export default function Home() {
+  const [stats, setStats] = useState({
+    total_companies: 0,
+    average_seo_score: 0,
+    critical_issues: 0,
+    scans_today: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/scans/dashboard-stats`);
+        if (resp.ok) {
+          const data = await resp.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pt-8">
@@ -15,10 +39,10 @@ export default function Home() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 relative z-10">
-          <StatCard label="Active Portfolio" value="0" type="normal" />
-          <StatCard label="Network Health" value="0/100" type="health" />
-          <StatCard label="Critical Flags" value="0" type="danger" />
-          <StatCard label="Scans Today" value="0" type="normal" />
+          <StatCard label="Active Portfolio" value={stats.total_companies.toString()} type="normal" />
+          <StatCard label="Avg Portfolio SEO" value={`${stats.average_seo_score}/100`} type="health" />
+          <StatCard label="Critical Flags" value={stats.critical_issues.toString()} type="danger" />
+          <StatCard label="Scans Today" value={stats.scans_today.toString()} type="normal" />
         </div>
 
         {/* Action Cards */}

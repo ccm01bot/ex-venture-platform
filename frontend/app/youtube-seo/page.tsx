@@ -33,6 +33,43 @@ export default function YouTubeSEOPage() {
 
   // Thumbnail Style state
   const [imageStyle, setImageStyle] = useState('Photorealistic');
+  const [imageQuality, setImageQuality] = useState('draft');
+  const [generatingMore, setGeneratingMore] = useState(false);
+
+  const handleGenerateAnother = async () => {
+    if (!result) return;
+    setGeneratingMore(true);
+    try {
+      const title = result.titles[0] || 'YouTube Video Thumbnail';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/youtube/thumbnail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          image_style: imageStyle,
+          image_quality: imageQuality
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate extra thumbnail');
+      const data = await response.json();
+      
+      // Append the new thumbnail and switch to it
+      setResult(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          thumbnail_urls: [...prev.thumbnail_urls, data.url]
+        };
+      });
+      setActiveIdx(result.thumbnail_urls.length); 
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate another variation.');
+    } finally {
+      setGeneratingMore(false);
+    }
+  };
 
   const [loading, setLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -44,20 +81,29 @@ export default function YouTubeSEOPage() {
   const estimatedSeconds = Math.floor((wordCount % 150) / (150 / 60));
   const estimatedTime = `~${estimatedMinutes}:${estimatedSeconds.toString().padStart(2, '0')}`;
 
-  const handleBrainstorm = (e: React.FormEvent) => {
+  const handleBrainstorm = async (e: React.FormEvent) => {
     e.preventDefault();
     setBrainstorming(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/youtube/brainstorm`, {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to fetch concepts');
+      const data = await response.json();
+      setIdeas(data.ideas);
+    } catch (err) {
+      console.error(err);
+      // Absolute fallback if API fails
       setIdeas([
         "10 Habits of Highly Effective Founders (2026 Edition)",
         "Why 90% of AI Startups Will Fail Next Year",
         "The Complete Guide to Series A Funding Term Sheets",
         "How to Build a Minimum Viable Product in 48 Hours"
       ]);
+    } finally {
       setBrainstorming(false);
-    }, 1500);
+    }
   };
-
   const [result, setResult] = useState<{titles: string[], description: string, tags: string[], thumbnail_urls: string[]} | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -76,7 +122,8 @@ export default function YouTubeSEOPage() {
           url,
           script,
           selected_idea: selectedIdea,
-          image_style: imageStyle
+          image_style: imageStyle,
+          image_quality: imageQuality
         }),
       });
 
@@ -259,11 +306,26 @@ export default function YouTubeSEOPage() {
 
           {/* AI Thumbnail Styles Section */}
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-slate-400" /> Generated Thumbnail Style
+                <ImageIcon className="w-5 h-5 text-slate-400" /> Generated Thumbnail Settings
               </h2>
-              <div className="bg-cyan-500/10 text-cyan-400 text-xs font-semibold px-2 py-1 rounded-full border border-cyan-500/20">Parallel Pipeline</div>
+              <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setImageQuality('draft')}
+                  className={`px-4 py-1.5 rounded-md text-xs font-bold transition ${imageQuality === 'draft' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Draft (Free)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageQuality('premium')}
+                  className={`px-4 py-1.5 rounded-md text-xs font-bold transition ${imageQuality === 'premium' ? 'bg-fuchsia-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Premium ($0.03)
+                </button>
+              </div>
             </div>
             <p className="text-sm text-slate-500 mb-4">Select a visual style. An optimized thumbnail will be generated automatically alongside your SEO extraction.</p>
             
@@ -386,16 +448,29 @@ export default function YouTubeSEOPage() {
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6">Thumbnail Options</h3>
                   <div className="grid grid-cols-3 gap-4">
                     {result.thumbnail_urls.map((url, idx) => (
-                      <button 
-                        key={idx}
-                        onClick={() => setActiveIdx(idx)}
-                        className={`relative aspect-video rounded-lg overflow-hidden border-2 transition ${
-                          activeIdx === idx ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-transparent hover:border-slate-500 opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        <img src={url} alt={`Variation ${idx + 1}`} className="w-full h-full object-cover" />
-                      </button>
+                      <div key={idx} className="flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Option {idx + 1}</span>
+                        <button 
+                          onClick={() => setActiveIdx(idx)}
+                          className={`relative aspect-video rounded-lg overflow-hidden border-2 transition ${
+                            activeIdx === idx ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-transparent hover:border-slate-500 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <img src={url} alt={`Variation ${idx + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      </div>
                     ))}
+                    <div className="flex flex-col gap-2">
+                       <span className="text-[10px] font-bold text-slate-500 uppercase opacity-0">Action</span>
+                       <button 
+                         type="button"
+                         disabled={generatingMore}
+                         onClick={handleGenerateAnother}
+                         className="relative aspect-video rounded-lg overflow-hidden border-2 border-dashed border-slate-700 text-slate-500 hover:text-white hover:border-slate-500 hover:bg-slate-800 transition flex items-center justify-center font-bold text-sm disabled:opacity-50"
+                       >
+                         {generatingMore ? 'Working...' : '+ Generate Another'}
+                       </button>
+                    </div>
                   </div>
                 </div>
 

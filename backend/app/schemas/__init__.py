@@ -48,6 +48,9 @@ class CompanyUpdate(BaseModel):
     url: Optional[str] = None
     industry_tags: Optional[List[str]] = None
     platform: Optional[str] = None
+    cms_platform: Optional[str] = None
+    cms_url: Optional[str] = None
+    cms_api_key: Optional[str] = None
     base44_connected: Optional[bool] = None
     gsc_connected: Optional[bool] = None
 
@@ -56,9 +59,13 @@ class CompanyResponse(BaseModel):
     id: UUID
     name: str
     url: str
+    overall_score: Optional[int] = None
     industry_tags: List[str]
     platform: Optional[str]
     platform_confidence: Optional[float]
+    cms_platform: str
+    cms_url: Optional[str]
+    cms_api_key: Optional[str]
     base44_connected: bool
     gsc_connected: bool
     sitemaps_found: bool
