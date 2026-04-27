@@ -14,7 +14,7 @@ TODAY = datetime.date.today()
 DATE_SHORT = TODAY.strftime("%Y-%m-%d")
 THUMB_PATH = os.environ.get("THUMB_PATH", f"/tmp/morningbrief/thumbnail_{DATE_SHORT}.png")
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_REVOKED_PLACEHOLDER")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_PLACEHOLDER")
 
 PROMPT = f"Professional YouTube thumbnail for a daily AI news report video. Dark blue and purple tech background with glowing circuit board patterns and neural network visuals. Bold large white text says AI NEWS {TODAY.strftime('%b %d')}. Red BREAKING badge in corner. Modern, clean, eye-catching. No people no faces. 16:9 aspect ratio."
 

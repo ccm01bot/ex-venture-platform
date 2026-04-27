@@ -303,37 +303,37 @@ export const NewsShort: React.FC<{
         </span>
       </div>
 
-      {/* "BREAKING" / topic pill */}
+      {/* AI NEWS badge - top right */}
       <div
         style={{
           position: "absolute",
-          top: 110,
-          left: 50,
+          top: 60,
+          right: 50,
           zIndex: 10,
         }}
       >
         <div
           style={{
-            background: `${accentColor}25`,
-            border: `1px solid ${accentColor}50`,
-            borderRadius: 20,
-            padding: "4px 18px",
-            opacity: interpolate(frame, [10, 25], [0, 1], {
+            background: "#ff0000",
+            borderRadius: 8,
+            padding: "6px 20px",
+            opacity: interpolate(frame, [5, 20], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             }),
+            boxShadow: "0 2px 12px rgba(255,0,0,0.5)",
           }}
         >
           <span
             style={{
-              color: accentColor,
-              fontSize: 18,
-              fontWeight: 700,
-              fontFamily: "Arial, sans-serif",
-              letterSpacing: 2,
+              color: "white",
+              fontSize: 22,
+              fontWeight: 900,
+              fontFamily: "'Arial Black', Arial, sans-serif",
+              letterSpacing: 3,
             }}
           >
-            BREAKING NEWS
+            AI NEWS
           </span>
         </div>
       </div>

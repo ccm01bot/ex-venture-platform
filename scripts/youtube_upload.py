@@ -19,7 +19,7 @@ from googleapiclient.http import MediaFileUpload
 CREDS_DIR = os.path.expanduser('~/.youtube-exai')
 TOKEN_FILE = os.path.join(CREDS_DIR, 'token.json')
 OPENAI_KEY = os.environ.get('OPENAI_API_KEY', '')
-GEMINI_KEY = os.environ.get('GEMINI_API_KEY', 'GEMINI_API_KEY_REVOKED_PLACEHOLDER')
+GEMINI_KEY = os.environ.get('GEMINI_API_KEY', 'GEMINI_API_KEY_PLACEHOLDER')
 TODAY = datetime.date.today()
 DATE_FRIENDLY = TODAY.strftime("%A, %B %d, %Y")
 DATE_SHORT = TODAY.strftime("%Y-%m-%d")

@@ -25,7 +25,7 @@ DATE_SHORT = TODAY.strftime("%Y-%m-%d")
 BRIEF_FILE = f"/tmp/morningbrief/brief_{DATE_SHORT}.md"
 SHORTS_DIR = f"/tmp/morningbrief/shorts_{DATE_SHORT}"
 CDP = "http://127.0.0.1:9222"
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_REVOKED_PLACEHOLDER")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_PLACEHOLDER")
 REMOTION_DIR = "/Users/franzccm/projects/ex-venture-platform/remotion-video"
 DL_BASE = "/tmp/morningbrief/downloads_shorts"
 

@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ─── Config ───
 
-GEMINI_KEY = os.environ.get('GEMINI_API_KEY', 'GEMINI_API_KEY_REVOKED_PLACEHOLDER')
+GEMINI_KEY = os.environ.get('GEMINI_API_KEY', 'GEMINI_API_KEY_PLACEHOLDER')
 CREDS_DIR = os.path.expanduser('~/.youtube-exai')
 TOKEN_FILE = os.path.join(CREDS_DIR, 'token.json')
 REMOTION_DIR = '/Users/franzccm/projects/ex-venture-platform/remotion-video'

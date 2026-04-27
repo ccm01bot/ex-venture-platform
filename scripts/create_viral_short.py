@@ -17,7 +17,7 @@ TODAY = datetime.date.today()
 DATE_SHORT = TODAY.strftime("%Y-%m-%d")
 WORK_DIR = f"/tmp/morningbrief/viral_short_{DATE_SHORT}"
 HF_DIR = "/Users/franzccm/projects/ex-venture-platform/morningbrief-edit"
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_REVOKED_PLACEHOLDER")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "GEMINI_API_KEY_PLACEHOLDER")
 BRIEF = None
 
 # Find brief

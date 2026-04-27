@@ -18,7 +18,7 @@ export PATH="/Users/franzccm/Library/Python/3.14/bin:/opt/homebrew/bin:/usr/loca
 export PYTHONPATH="/Users/franzccm/Library/Python/3.14/lib/python3.14/site-packages:${PYTHONPATH:-}"
 export SLACK_USER_TOKEN="SLACK_USER_TOKEN_PLACEHOLDER"
 export OPENAI_API_KEY="OPENAI_API_KEY_PLACEHOLDER"
-export GEMINI_API_KEY="GEMINI_API_KEY_REVOKED_PLACEHOLDER"
+export GEMINI_API_KEY="GEMINI_API_KEY_PLACEHOLDER"
 export OPENROUTER_API_KEY="OPENROUTER_API_KEY_PLACEHOLDER"
 SCRIPTS_DIR="/Users/franzccm/projects/ex-venture-platform/scripts"
 BRIEF_DIR="/tmp/morningbrief"
@@ -128,7 +128,13 @@ VIDEO_PATH="/tmp/morningbrief/morningbrief_video_${DATE_SHORT}.mp4" BRIEF_FILE="
 echo ""
 echo "=== Uploading to YouTube ==="
 wait $THUMB_PID 2>/dev/null || true
-python3 -u "$SCRIPTS_DIR/youtube_upload.py" || echo "YouTube upload failed (non-fatal)"
+# Retry up to 3 times with 30-min waits (handles upload limit from previous day's shorts)
+for attempt in 1 2 3; do
+    echo "YouTube upload attempt $attempt/3..."
+    python3 -u "$SCRIPTS_DIR/youtube_upload.py" && break
+    echo "Upload failed (attempt $attempt). Waiting 30 min before retry..."
+    [ $attempt -lt 3 ] && sleep 1800
+done
 
 # ─── Step 6: A/B rotation ───
 python3 -u "$SCRIPTS_DIR/youtube_ab_rotate.py" > /dev/null 2>&1 || true
